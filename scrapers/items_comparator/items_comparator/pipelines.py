@@ -53,6 +53,7 @@ class MySQLPipeline:
                 prix DECIMAL(10,2),
                 image VARCHAR(500),
                 lien VARCHAR(500),
+                site VARCHAR(100),
                 scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE KEY ux_lien (lien(255))
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -77,24 +78,29 @@ class MySQLPipeline:
     def process_item(self, item, spider):
         try:
             sql = """
-                INSERT INTO products (titre, prix, image, lien)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO products (titre, prix, image, lien, site)
+                VALUES (%s, %s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE
                     titre = VALUES(titre),
                     prix = VALUES(prix),
                     image = VALUES(image),
+                    site = VALUES(site),
                     scraped_at = CURRENT_TIMESTAMP
             """
             values = (
                 item.get('titre'),
                 item.get('prix'),
                 item.get('image'),
-                item.get('lien')
+                item.get('lien'),
+                item.get('site')
             )
             self.cursor.execute(sql, values)
+
         except Error as e:
-            spider.logger.error(f"Erreur insertion MySQL: {e} -- item: {dict(item)}")
+            spider.logger.error("Erreur insertion MySQL: %s -- item: %s", e, dict(item))
+
         return item
+
 
     
 
