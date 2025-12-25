@@ -3,6 +3,7 @@ import re
 
 class ZalandoSpider(scrapy.Spider):
     name = "zalando"
+    site_name = "zalando"
     allowed_domains = ["zalando.fr"]
 
     def start_requests(self):
@@ -39,5 +40,6 @@ class ZalandoSpider(scrapy.Spider):
                 "titre": titre,
                 "prix": prix,
                 "image": image,
-                "lien": response.urljoin(lien)
+                "lien": response.urljoin(lien),
+                "site": self.site_name
             }
