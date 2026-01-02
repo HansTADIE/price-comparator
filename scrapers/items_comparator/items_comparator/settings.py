@@ -79,14 +79,24 @@ PLAYWRIGHT_BROWSER_TYPE = "chromium"
 PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 120000  # 30 secondes
 
 # MySQL (XAMPP local)
-MYSQL_HOST = '127.0.0.1'
-MYSQL_PORT = 3306
-MYSQL_USER = 'root'
-MYSQL_PASSWORD = ''   # ou ton mot de passe si tu l'as défini
-MYSQL_DATABASE = 'price_comparator'
+#MYSQL_HOST = '127.0.0.1'
+#MYSQL_PORT = 3306
+#MYSQL_USER = 'root'
+#MYSQL_PASSWORD = ''   # ou ton mot de passe si tu l'as défini
+#MYSQL_DATABASE = 'price_comparator'
 
-# Pipelines Scrapy
+# settings.py
+
+
+
+# 2. Ajoute les accès à la base Docker
+MYSQL_HOST = 'localhost'
+MYSQL_USER = 'root'
+MYSQL_PASSWORD = 'root'
+MYSQL_DB = 'price_comparator'
+
+#Pipelines Scrapy
 ITEM_PIPELINES = {
-    #"items_comparator.pipelines.MySQLPipeline": 300,
+    "items_comparator.pipelines.MySQLPipeline": 300,
 }
 

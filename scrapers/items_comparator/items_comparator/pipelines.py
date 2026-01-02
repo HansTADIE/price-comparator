@@ -19,12 +19,12 @@ from mysql.connector import Error
 
 class MySQLPipeline:
     def __init__(self):
-        # Utiliser les variables d'environnement définies dans docker-compose.yml
-        self.host = os.getenv('MYSQL_HOST', '127.0.0.1')
-        self.user = os.getenv('MYSQL_USER', 'root')
-        self.password = os.getenv('MYSQL_PASSWORD', '')
-        self.database = os.getenv('MYSQL_DATABASE', 'price_comparator')
-        self.port = int(os.getenv('MYSQL_PORT', 3306))
+        # On force les valeurs pour correspondre au docker-compose
+        self.host = '127.0.0.1'
+        self.user = 'root'
+        self.password = 'root' 
+        self.database = 'price_comparator'
+        self.port = 3306
 
     def open_spider(self, spider):
         try:

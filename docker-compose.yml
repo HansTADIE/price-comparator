@@ -1,30 +1,27 @@
-version: "3.9"
-
 services:
   db:
-    image: mysql:8.1
-    container_name: mysql_price_comparator
+    image: mysql:8.0
+    container_name: mysql_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: price_comparator
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - db_data:/var/lib/mysql
 
-  scraper:
-    build: ./scrapers
-    container_name: scrapy_price_comparator
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: pma_price_comparator
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
     depends_on:
       - db
-    environment:
-      MYSQL_HOST: db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: price_comparator
-    volumes:
-      - ./scrapers:/app
-    command: tail -f /dev/null
+
+volumes:
+  db_data:
