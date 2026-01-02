@@ -17,6 +17,7 @@ USER_AGENT = (
 )
 ROBOTSTXT_OBEY = False
 
+
 # =========================
 # CONCURRENCY & DELAY
 # =========================
@@ -86,6 +87,6 @@ MYSQL_DATABASE = 'price_comparator'
 
 # Pipelines Scrapy
 ITEM_PIPELINES = {
-    "items_comparator.pipelines.MySQLPipeline": 300,
+    #"items_comparator.pipelines.MySQLPipeline": 300,
 }
 
