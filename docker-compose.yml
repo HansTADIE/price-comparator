@@ -23,5 +23,20 @@ services:
     depends_on:
       - db
 
+  # AJOUTE LE SERVICE WEB ICI (bien aligné sous phpmyadmin)
+  web:
+    build: ./web_app
+    container_name: flask_web_app
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=price_comparator
+
 volumes:
   db_data:
