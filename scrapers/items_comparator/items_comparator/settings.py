@@ -23,7 +23,7 @@ ROBOTSTXT_OBEY = False
 # =========================
 CONCURRENT_REQUESTS = 8
 CONCURRENT_REQUESTS_PER_DOMAIN = 1
-DOWNLOAD_DELAY = 1.5
+#DOWNLOAD_DELAY = 1.5
 
 # =========================
 # COOKIES
@@ -88,6 +88,18 @@ PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 120000  # 30 secondes
 # settings.py
 
 
+# Désactive le chargement des images et des polices pour aller plus vite et éviter d'être bloqué
+PLAYWRIGHT_LAUNCH_OPTIONS = {
+    "headless": True, # Tu peux mettre False pour VOIR ce qui se passe
+}
+# Empêcher le chargement des images et des polices pour éviter le timeout
+def should_abort_request(request):
+    return request.resource_type in ["image", "font", "media"]
+
+PLAYWRIGHT_ABORT_REQUEST = should_abort_request
+
+# Augmente le délai pour être plus discret
+DOWNLOAD_DELAY = 3
 
 # 2. Ajoute les accès à la base Docker
 MYSQL_HOST = 'localhost'

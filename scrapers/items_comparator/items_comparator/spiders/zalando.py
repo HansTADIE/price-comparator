@@ -1,5 +1,6 @@
 import scrapy
 import re
+from scrapy_playwright.page import PageMethod
 
 class ZalandoSpider(scrapy.Spider):
     name = "zalando"
@@ -13,10 +14,15 @@ class ZalandoSpider(scrapy.Spider):
             callback=self.parse,
             meta={
                 "playwright": True,
+                "playwright_include_page": True,
                 "playwright_page_methods": [
-                    # Attendre que les articles soient chargés
-                    {"name": "wait_for_selector", "args": ["article"]}
+                    # On attend explicitement qu'un article soit là, rien d'autre
+                    PageMethod("wait_for_selector", "article", timeout=30000),
                 ],
+                # AJOUT CRUCIAL : on n'attend pas le chargement complet (load)
+                "playwright_context_kwargs": {
+                    "ignore_https_errors": True,
+                },
             }
         )
 
