@@ -75,13 +75,13 @@ DOWNLOAD_HANDLERS = {
 }
 
 PLAYWRIGHT_BROWSER_TYPE = "chromium"
-PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 120000  # 30 secondes
+PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 300000  # 300 secondes
 
 # MySQL (XAMPP local)
-MYSQL_HOST = '127.0.0.1'
+MYSQL_HOST = 'db'
 MYSQL_PORT = 3306
-MYSQL_USER = 'root'
-MYSQL_PASSWORD = ''   # ou ton mot de passe si tu l'as défini
+MYSQL_USER = 'user'
+MYSQL_PASSWORD = 'password'   # ou ton mot de passe si tu l'as défini
 MYSQL_DATABASE = 'price_comparator'
 
 # Pipelines Scrapy

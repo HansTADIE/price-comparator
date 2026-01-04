@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparateur de Prix - Nike Dunk</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Comparateur de Prix Nike Dunk</h1>
+            <p class="subtitle">Comparez les prix entre Zalando, Courir et Spartoo</p>
+        </header>
+
+        <div class="controls">
+            <button id="scrapeBtn" class="btn-primary">
+                <span class="btn-icon">🔄</span>
+                Lancer le Scraping
+            </button>
+        </div>
+
+        <div id="loadingContainer" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p id="loadingText">Scraping en cours...</p>
+            <div class="progress-bar">
+                <div id="progressBar" class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div id="resultsContainer" style="display: none;">
+            <div class="table-header">
+                <h2>Résultats de la Comparaison</h2>
+                <p class="result-count" id="resultCount"></p>
+            </div>
+            
+            <div class="table-container">
+                <table id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th class="product-column">Produit</th>
+                            <th class="site-column">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'%3E%3Ctext x='50' y='20' font-size='16' fill='%23ff6900' text-anchor='middle' font-weight='bold'%3EZalando%3C/text%3E%3C/svg%3E" alt="Zalando">
+                            </th>
+                            <th class="site-column">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'%3E%3Ctext x='50' y='20' font-size='16' fill='%23000' text-anchor='middle' font-weight='bold'%3ECourir%3C/text%3E%3C/svg%3E" alt="Courir">
+                            </th>
+                            <th class="site-column">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'%3E%3Ctext x='50' y='20' font-size='16' fill='%23e30613' text-anchor='middle' font-weight='bold'%3ESpartoo%3C/text%3E%3C/svg%3E" alt="Spartoo">
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Les résultats seront insérés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="errorContainer" class="error-message" style="display: none;">
+            <span class="error-icon">⚠️</span>
+            <span id="errorText"></span>
+        </div>
+    </div>
+
+    <script>
+        const scrapeBtn = document.getElementById('scrapeBtn');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const loadingText = document.getElementById('loadingText');
+        const progressBar = document.getElementById('progressBar');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const tableBody = document.getElementById('tableBody');
+        const errorContainer = document.getElementById('errorContainer');
+        const errorText = document.getElementById('errorText');
+        const resultCount = document.getElementById('resultCount');
+
+        scrapeBtn.addEventListener('click', async () => {
+            // Réinitialiser l'affichage
+            errorContainer.style.display = 'none';
+            resultsContainer.style.display = 'none';
+            loadingContainer.style.display = 'block';
+            scrapeBtn.disabled = true;
+            
+            try {
+                // Étape 1: Lancer le scraping
+                loadingText.textContent = 'Scraping de Zalando, Courir et Spartoo...';
+                progressBar.style.width = '10%';
+                
+                const scrapeResponse = await fetch('/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const scrapeData = await scrapeResponse.json();
+                
+                if (scrapeData.status === 'error') {
+                    throw new Error(scrapeData.message);
+                }
+                
+                // Mise à jour de la progression
+                progressBar.style.width = '100%';
+                loadingText.textContent = 'Scraping terminé ! Chargement des résultats...';
+                
+                // Attendre un peu pour que les données soient bien en base
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Étape 2: Récupérer les produits
+                const productsResponse = await fetch('/products');
+                const productsData = await productsResponse.json();
+                
+                if (productsData.status === 'error') {
+                    throw new Error(productsData.message);
+                }
+                
+                // Afficher les résultats
+                displayResults(productsData.products);
+                
+            } catch (error) {
+                errorText.textContent = `Erreur: ${error.message}`;
+                errorContainer.style.display = 'block';
+                loadingContainer.style.display = 'none';
+            } finally {
+                scrapeBtn.disabled = false;
+            }
+        });
+
+        function displayResults(products) {
+            tableBody.innerHTML = '';
+            
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.className = 'product-row';
+                
+                // Colonne produit
+                const productCell = document.createElement('td');
+                productCell.className = 'product-info';
+                productCell.innerHTML = `
+                    <div class="product-title">${product.titre}</div>
+                `;
+                row.appendChild(productCell);
+                
+                // Colonnes pour chaque site
+                ['zalando', 'courir', 'spartoo'].forEach(site => {
+                    const siteData = product[site];
+                    const cell = document.createElement('td');
+                    cell.className = 'site-info';
+                    
+                    if (siteData.prix && siteData.image && siteData.lien) {
+                        cell.innerHTML = `
+                            <div class="product-card">
+                                <a href="${siteData.lien}" target="_blank" class="product-link">
+                                    <img src="${siteData.image}" alt="${product.titre}" class="product-image">
+                                    <div class="product-price">${siteData.prix.toFixed(2)} €</div>
+                                    <div class="view-link">Voir l'offre →</div>
+                                </a>
+                            </div>
+                        `;
+                    } else {
+                        cell.innerHTML = `
+                            <div class="product-card unavailable">
+                                <div class="unavailable-text">Non disponible</div>
+                            </div>
+                        `;
+                    }
+                    
+                    row.appendChild(cell);
+                });
+                
+                tableBody.appendChild(row);
+            });
+            
+            resultCount.textContent = `${products.length} produits comparés`;
+            loadingContainer.style.display = 'none';
+            resultsContainer.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

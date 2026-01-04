@@ -1,30 +1,83 @@
-version: "3.9"
+version: '3.8'
 
 services:
   db:
-    image: mysql:8.1
-    container_name: mysql_price_comparator
+    image: mysql:8.1.0
+    container_name: price_comparator_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: price_comparator
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "3307:3306"
-    volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - comparator_network
 
-  scraper:
-    build: ./scrapers
-    container_name: scrapy_price_comparator
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: price_comparator_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: user
+      PMA_PASSWORD: password
+    ports:
+      - "8080:80"
     depends_on:
       - db
+    networks:
+      - comparator_network
+
+  scrapers:
+    build: ./scrapers
+    container_name: price_comparator_scrapers
+    restart: always
+    volumes:
+      - ./scrapers/items_comparator:/app/items_comparator
     environment:
       MYSQL_HOST: db
+      MYSQL_PORT: 3306
       MYSQL_USER: user
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: price_comparator
-    volumes:
-      - ./scrapers:/app
+    depends_on:
+      - db
+    networks:
+      - comparator_network
     command: tail -f /dev/null
+
+  webapp:
+    build: ./webapp
+    container_name: price_comparator_webapp
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./webapp:/app
+      - ./scrapers/items_comparator:/app/items_comparator
+    environment:
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: price_comparator
+      FLASK_ENV: development
+      SCRAPERS_PATH: /app/items_comparator   # <-- ajouter ceci
+    depends_on:
+      - db
+      - scrapers
+    networks:
+      - comparator_network
+
+volumes:
+  db_data:
+
+networks:
+  comparator_network:
+    driver: bridge
