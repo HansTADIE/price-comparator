@@ -5,6 +5,8 @@ services:
     image: mysql:8.1.0
     container_name: price_comparator_db
     restart: always
+    # AJOUT: Cette commande évite les erreurs de connexion "Authentication plugin" avec certains drivers Python
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_DATABASE: price_comparator
       MYSQL_USER: user
@@ -50,6 +52,8 @@ services:
       - db
     networks:
       - comparator_network
+    # Note : Avec cette commande, le conteneur démarre et attend. 
+    # Tu devras lancer le script de scraping manuellement ou via un script externe.
     command: tail -f /dev/null
 
   webapp:
@@ -68,7 +72,7 @@ services:
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: price_comparator
       FLASK_ENV: development
-      SCRAPERS_PATH: /app/items_comparator   # <-- ajouter ceci
+      SCRAPERS_PATH: /app/items_comparator
     depends_on:
       - db
       - scrapers
