@@ -1,3 +1,19 @@
-scrapy
-scrapy-playwright
-mysql-connector-python
+# On utilise l'image officielle Playwright.
+# Elle contient Python ET les navigateurs nécessaires.
+FROM mcr.microsoft.com/playwright/python:v1.40.0-jammy
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+# 1. On installe les librairies Python (Scrapy, etc.)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 2. INDISPENSABLE : On installe le navigateur Chromium et ses dépendances système
+RUN playwright install chromium
+RUN playwright install-deps
+
+COPY . .
+
+# On garde le conteneur actif pour pouvoir lancer des commandes dedans
+CMD ["tail", "-f", "/dev/null"]
